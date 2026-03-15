@@ -8,6 +8,7 @@ set -euo pipefail
 # Configuration
 readonly BACKUP_DIR="$HOME/.claude-switch-backup"
 readonly SEQUENCE_FILE="$BACKUP_DIR/sequence.json"
+readonly VERSION="1.0.0"
 
 # Container detection
 is_running_in_container() {
@@ -34,11 +35,15 @@ is_running_in_container() {
     return 1
 }
 
-# Platform detection
+# Platform detection (override with CCSWITCH_PLATFORM for testing)
 detect_platform() {
+    if [[ -n "${CCSWITCH_PLATFORM:-}" ]]; then
+        echo "$CCSWITCH_PLATFORM"
+        return
+    fi
     case "$(uname -s)" in
         Darwin) echo "macos" ;;
-        Linux) 
+        Linux)
             if [[ -n "${WSL_DISTRO_NAME:-}" ]]; then
                 echo "wsl"
             else
@@ -110,16 +115,16 @@ write_json() {
     local content="$2"
     local temp_file
     temp_file=$(mktemp "${file}.XXXXXX")
-    
+    chmod 600 "$temp_file"
+
     echo "$content" > "$temp_file"
     if ! jq . "$temp_file" >/dev/null 2>&1; then
         rm -f "$temp_file"
         echo "Error: Generated invalid JSON"
         return 1
     fi
-    
+
     mv "$temp_file" "$file"
-    chmod 600 "$file"
 }
 
 # Check Bash version (4.4+ required)
@@ -134,13 +139,11 @@ check_bash_version() {
 
 # Check dependencies
 check_dependencies() {
-    for cmd in jq; do
-        if ! command -v "$cmd" >/dev/null 2>&1; then
-            echo "Error: Required command '$cmd' not found"
-            echo "Install with: apt install $cmd (Linux) or brew install $cmd (macOS)"
-            exit 1
-        fi
-    done
+    if ! command -v jq >/dev/null 2>&1; then
+        echo "Error: Required command 'jq' not found"
+        echo "Install with: apt install jq (Linux) or brew install jq (macOS)"
+        exit 1
+    fi
 }
 
 # Setup backup directories
@@ -215,7 +218,7 @@ write_credentials() {
     
     case "$platform" in
         macos)
-            security add-generic-password -U -s "Claude Code-credentials" -a "$USER" -w "$credentials" 2>/dev/null
+            security add-generic-password -U -s "Claude Code-credentials" -a "$USER" -w - 2>/dev/null <<< "$credentials"
             ;;
         linux|wsl)
             mkdir -p "$HOME/.claude"
@@ -257,7 +260,7 @@ write_account_credentials() {
     
     case "$platform" in
         macos)
-            security add-generic-password -U -s "Claude Code-Account-${account_num}-${email}" -a "$USER" -w "$credentials" 2>/dev/null
+            security add-generic-password -U -s "Claude Code-Account-${account_num}-${email}" -a "$USER" -w - 2>/dev/null <<< "$credentials"
             ;;
         linux|wsl)
             local cred_file="$BACKUP_DIR/credentials/.claude-credentials-${account_num}-${email}.json"
@@ -294,9 +297,10 @@ write_account_config() {
 # Initialize sequence.json if it doesn't exist
 init_sequence_file() {
     if [[ ! -f "$SEQUENCE_FILE" ]]; then
-        local init_content='{
+        local init_content
+        init_content='{
   "activeAccountNumber": null,
-  "lastUpdated": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
+  "lastUpdated": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'",
   "sequence": [],
   "accounts": {}
 }'
@@ -546,11 +550,11 @@ cmd_switch() {
         exit 0
     fi
     
-    # wait_for_claude_close
-    
+    wait_for_claude_close
+
     local active_account sequence
     active_account=$(jq -r '.activeAccountNumber' "$SEQUENCE_FILE")
-    sequence=($(jq -r '.sequence[]' "$SEQUENCE_FILE"))
+    mapfile -t sequence < <(jq -r '.sequence[]' "$SEQUENCE_FILE")
     
     # Find next account in sequence
     local next_account current_index=0
@@ -607,7 +611,7 @@ cmd_switch_to() {
         exit 1
     fi
     
-    # wait_for_claude_close
+    wait_for_claude_close
     perform_switch "$target_account"
 }
 
@@ -638,6 +642,18 @@ perform_switch() {
         echo "Error: Missing backup data for Account-$target_account"
         exit 1
     fi
+
+    # Validate backup integrity before restoring
+    if ! echo "$target_config" | jq -e '.oauthAccount.emailAddress' >/dev/null 2>&1; then
+        echo "Error: Backup config for Account-$target_account is corrupted or tampered with"
+        exit 1
+    fi
+    local backup_email
+    backup_email=$(echo "$target_config" | jq -r '.oauthAccount.emailAddress')
+    if [[ "$backup_email" != "$target_email" ]]; then
+        echo "Error: Backup email mismatch for Account-$target_account (expected $target_email, got $backup_email)"
+        exit 1
+    fi
     
     # Step 3: Activate target account
     write_credentials "$target_creds"
@@ -652,8 +668,7 @@ perform_switch() {
     
     # Merge with current config and validate
     local merged_config
-    merged_config=$(jq --argjson oauth "$oauth_section" '.oauthAccount = $oauth' "$(get_claude_config_path)" 2>/dev/null)
-    if [[ $? -ne 0 ]]; then
+    if ! merged_config=$(jq --argjson oauth "$oauth_section" '.oauthAccount = $oauth' "$(get_claude_config_path)" 2>/dev/null); then
         echo "Error: Failed to merge config"
         exit 1
     fi
@@ -679,9 +694,35 @@ perform_switch() {
     
 }
 
+# Show status
+cmd_status() {
+    echo "ccswitch v${VERSION}"
+    echo ""
+
+    local platform
+    platform=$(detect_platform)
+    echo "Platform: $platform"
+
+    local current_email
+    current_email=$(get_current_account)
+    if [[ "$current_email" == "none" ]]; then
+        echo "Current account: not logged in"
+    else
+        echo "Current account: $current_email"
+    fi
+
+    if [[ -f "$SEQUENCE_FILE" ]]; then
+        local count
+        count=$(jq '.sequence | length' "$SEQUENCE_FILE")
+        echo "Managed accounts: $count"
+    else
+        echo "Managed accounts: 0"
+    fi
+}
+
 # Show usage
 show_usage() {
-    echo "Multi-Account Switcher for Claude Code"
+    echo "Multi-Account Switcher for Claude Code v${VERSION}"
     echo "Usage: $0 [COMMAND]"
     echo ""
     echo "Commands:"
@@ -690,6 +731,8 @@ show_usage() {
     echo "  --list                           List all managed accounts"
     echo "  --switch                         Rotate to next account in sequence"
     echo "  --switch-to <num|email>          Switch to specific account number or email"
+    echo "  --status                         Show current account and version info"
+    echo "  --version                        Show version number"
     echo "  --help                           Show this help message"
     echo ""
     echo "Examples:"
@@ -729,6 +772,12 @@ main() {
         --switch-to)
             shift
             cmd_switch_to "$@"
+            ;;
+        --status)
+            cmd_status
+            ;;
+        --version)
+            echo "ccswitch v${VERSION}"
             ;;
         --help)
             show_usage

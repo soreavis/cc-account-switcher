@@ -1,5 +1,7 @@
 # Multi-Account Switcher for Claude Code
 
+> **Fork of [ming86/cc-account-switcher](https://github.com/ming86/cc-account-switcher)** — security-hardened by Julian Soreavis with Claude Code.
+
 A simple tool to manage and switch between multiple Claude Code accounts on macOS, Linux, and WSL.
 
 ## Features
@@ -10,13 +12,30 @@ A simple tool to manage and switch between multiple Claude Code accounts on macO
 - **Secure storage**: Uses system keychain (macOS) or protected files (Linux/WSL)
 - **Settings preservation**: Only switches authentication - your themes, settings, and preferences remain unchanged
 
+## Security Enhancements (Fork)
+
+This fork includes the following security hardening over the upstream version:
+
+1. **Credentials no longer exposed in process list** — Keychain writes use stdin (`-w -`) instead of passing credentials as CLI arguments visible via `ps aux`
+2. **Switch-while-running protection re-enabled** — `wait_for_claude_close` is active in both `--switch` and `--switch-to`, preventing config/credential corruption if Claude Code is running
+3. **Temp file race condition eliminated** — `chmod 600` applied immediately after `mktemp`, before any content is written
+4. **Safe array population** — Replaced unquoted command substitution with `mapfile -t` to prevent word splitting
+5. **Backup integrity validation** — Restored configs are validated for valid JSON and email match before being applied, preventing tampered backup injection
+6. **Restrictive file permissions from creation** — Temp files are locked down before sensitive data touches disk
+
 ## Installation
 
 Download the script directly:
 
 ```bash
-curl -O https://raw.githubusercontent.com/ming86/cc-account-switcher/main/ccswitch.sh
+curl -O https://raw.githubusercontent.com/soreavis/cc-account-switcher/main/ccswitch.sh
 chmod +x ccswitch.sh
+```
+
+Or install to your PATH for global access:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/soreavis/cc-account-switcher/main/ccswitch.sh -o /usr/local/bin/ccswitch && chmod +x /usr/local/bin/ccswitch
 ```
 
 ## Usage
@@ -39,6 +58,12 @@ chmod +x ccswitch.sh
 
 # Remove an account
 ./ccswitch.sh --remove-account user2@example.com
+
+# Show current account and version info
+./ccswitch.sh --status
+
+# Show version
+./ccswitch.sh --version
 
 # Show help
 ./ccswitch.sh --help
@@ -121,6 +146,13 @@ Your current Claude Code login will remain active.
 - Credentials stored in macOS Keychain or files with 600 permissions
 - Authentication files are stored with restricted permissions (600)
 - The tool requires Claude Code to be closed during account switches
+- Backup integrity is validated before restore to prevent tampered credential injection
+
+## Credits
+
+- **Original author**: [Ming](https://github.com/ming86)
+- **Fork maintained by**: [Julian Soreavis](https://github.com/soreavis)
+- **Security audit & fixes**: Julian Soreavis with [Claude Code](https://claude.ai/code)
 
 ## License
 
