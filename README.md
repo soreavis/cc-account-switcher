@@ -1,5 +1,10 @@
 # Multi-Account Switcher for Claude Code
 
+[![CI](https://github.com/soreavis/cc-account-switcher/actions/workflows/ci.yml/badge.svg)](https://github.com/soreavis/cc-account-switcher/actions/workflows/ci.yml)
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Bash](https://img.shields.io/badge/bash-4.4%2B-green?logo=gnubash&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-blue)
+
 > **Fork of [ming86/cc-account-switcher](https://github.com/ming86/cc-account-switcher)** — security-hardened by Julian Soreavis with Claude Code.
 
 > [!WARNING]
