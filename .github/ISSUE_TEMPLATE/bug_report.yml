@@ -1,0 +1,55 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - macOS
+        - Linux
+        - WSL
+    validations:
+      required: true
+  - type: input
+    id: bash-version
+    attributes:
+      label: Bash Version
+      description: "Output of `bash --version | head -1`"
+      placeholder: "GNU bash, version 5.2.37(1)-release"
+    validations:
+      required: true
+  - type: input
+    id: ccswitch-version
+    attributes:
+      label: ccswitch Version
+      description: "Output of `./ccswitch.sh --version`"
+      placeholder: "ccswitch v1.0.0"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: What commands did you run?
+      placeholder: |
+        1. ./ccswitch.sh --add-account
+        2. ./ccswitch.sh --switch
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened? Include any error output.
+    validations:
+      required: true

@@ -2,6 +2,9 @@
 
 > **Fork of [ming86/cc-account-switcher](https://github.com/ming86/cc-account-switcher)** — security-hardened by Julian Soreavis with Claude Code.
 
+> [!WARNING]
+> This tool accesses and stores authentication credentials. Review the source code before use. The authors are not responsible for credential loss or unauthorized access. Use at your own risk.
+
 A simple tool to manage and switch between multiple Claude Code accounts on macOS, Linux, and WSL.
 
 ## Features
