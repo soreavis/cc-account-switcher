@@ -8,7 +8,7 @@ set -euo pipefail
 # Configuration
 readonly BACKUP_DIR="$HOME/.claude-switch-backup"
 readonly SEQUENCE_FILE="$BACKUP_DIR/sequence.json"
-readonly VERSION="1.0.0"
+readonly VERSION="1.0.1"
 
 # Container detection
 is_running_in_container() {
@@ -218,7 +218,7 @@ write_credentials() {
     
     case "$platform" in
         macos)
-            security add-generic-password -U -s "Claude Code-credentials" -a "$USER" -w - 2>/dev/null <<< "$credentials"
+            security add-generic-password -U -s "Claude Code-credentials" -a "$USER" -w "$credentials" 2>/dev/null
             ;;
         linux|wsl)
             mkdir -p "$HOME/.claude"
@@ -260,7 +260,7 @@ write_account_credentials() {
     
     case "$platform" in
         macos)
-            security add-generic-password -U -s "Claude Code-Account-${account_num}-${email}" -a "$USER" -w - 2>/dev/null <<< "$credentials"
+            security add-generic-password -U -s "Claude Code-Account-${account_num}-${email}" -a "$USER" -w "$credentials" 2>/dev/null
             ;;
         linux|wsl)
             local cred_file="$BACKUP_DIR/credentials/.claude-credentials-${account_num}-${email}.json"

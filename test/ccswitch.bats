@@ -136,3 +136,23 @@ teardown() {
     assert_failure
     assert_output --partial "does not exist"
 }
+
+# --- macOS keychain ---
+
+@test "macOS keychain writes pass credentials as the -w value" {
+    mkdir -p "$TEST_HOME/bin"
+    cat > "$TEST_HOME/bin/security" <<'EOF'
+#!/usr/bin/env bash
+while [[ $# -gt 1 ]]; do
+    [[ "$1" == "-w" ]] && printf '%s\n' "$2" >> "$HOME/keychain-writes"
+    shift
+done
+EOF
+    chmod +x "$TEST_HOME/bin/security"
+    export PATH="$TEST_HOME/bin:$PATH" CCSWITCH_PLATFORM="macos" USER="tester"
+
+    run bash -c 'source ccswitch.sh && write_credentials "$1" && write_account_credentials 1 a@test.com "$2"' _ '{"token":"live"}' '{"token":"backup"}'
+    assert_success
+    run cat "$HOME/keychain-writes"
+    assert_output $'{"token":"live"}\n{"token":"backup"}'
+}

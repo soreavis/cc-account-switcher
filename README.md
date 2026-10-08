@@ -1,7 +1,7 @@
 # Multi-Account Switcher for Claude Code
 
 [![CI](https://github.com/soreavis/cc-account-switcher/actions/workflows/ci.yml/badge.svg)](https://github.com/soreavis/cc-account-switcher/actions/workflows/ci.yml)
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.0.1-blue)
 ![Bash](https://img.shields.io/badge/bash-4.4%2B-green?logo=gnubash&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -24,7 +24,7 @@ A simple tool to manage and switch between multiple Claude Code accounts on macO
 
 This fork includes the following security hardening over the upstream version:
 
-1. **Credentials no longer exposed in process list** — Keychain writes use stdin (`-w -`) instead of passing credentials as CLI arguments visible via `ps aux`
+1. ~~**Credentials no longer exposed in process list** — Keychain writes use stdin (`-w -`) instead of passing credentials as CLI arguments visible via `ps aux`~~ **Correction (1.0.1):** `security` does not treat `-w -` as stdin; it takes `-` literally, so 1.0.0 stored `-` instead of the credentials. Keychain writes pass the credentials as a `-w` argument again, as upstream does, so they are visible in the process list while `security` runs.
 2. **Switch-while-running protection re-enabled** — `wait_for_claude_close` is active in both `--switch` and `--switch-to`, preventing config/credential corruption if Claude Code is running
 3. **Temp file race condition eliminated** — `chmod 600` applied immediately after `mktemp`, before any content is written
 4. **Safe array population** — Replaced unquoted command substitution with `mapfile -t` to prevent word splitting
