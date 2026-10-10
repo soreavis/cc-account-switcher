@@ -155,7 +155,7 @@ setup_directories() {
 
 # Claude Code process detection (Node.js app)
 is_claude_running() {
-    ps -eo pid,comm,args | awk '$2 == "claude" || $3 == "claude" {exit 0} END {exit 1}'
+    ps -eo pid,comm,args | awk '$2 == "claude" || $3 == "claude" {found = 1} END {exit !found}'
 }
 
 # Wait for Claude Code to close (no timeout - user controlled)

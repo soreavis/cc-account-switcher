@@ -9,11 +9,13 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and [Semant
 ### Fixed
 
 - `--switch` and `--switch-to` refused a missing backup but restored one saved as `-` by 1.0.0 on macOS, writing `-` over the live credentials again. They now refuse it too and print the repair steps.
+- `--switch` and `--switch-to` never waited for Claude Code to close: `is_claude_running` always returned false, because awk runs the `END` block after `exit` and `END` exited 1. Inherited from upstream.
 
 ### Added
 
 - README: how to repair accounts saved by 1.0.0 on macOS, and that re-added accounts get new numbers
 - Bats test for switching to a backup saved as `-`
+- Bats test that `--switch` waits for a running Claude Code; the tests stub `ps`, so a Claude Code running on the host doesn't block them
 
 ## [1.0.1] - 2026-10-09
 
@@ -36,7 +38,7 @@ First release of the security-hardened fork.
 ### Security
 
 - ~~Credentials passed via stdin instead of CLI arguments (no longer visible in `ps aux`)~~ Correction: this broke macOS Keychain writes and was reverted in 1.0.1
-- Re-enabled `wait_for_claude_close` to prevent config/credential corruption during switch
+- Re-enabled `wait_for_claude_close` to prevent config/credential corruption during switch. Correction: it never detected a running Claude Code until 1.0.2
 - Temp file permissions (`chmod 600`) applied immediately after creation, before writing content
 - Backup integrity validation before restore (JSON structure + email mismatch check)
 

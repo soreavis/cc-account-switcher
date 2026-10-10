@@ -136,6 +136,28 @@ teardown() {
     assert_output "$live"
 }
 
+@test "--switch waits for a running Claude Code to close" {
+    _create_mock_claude_config "a@test.com" "uuid-a"
+    _create_mock_credentials '{"token":"token-a"}'
+    _seed_account "1" "a@test.com" "uuid-a"
+    _seed_account "2" "b@test.com" "uuid-b"
+
+    local updated
+    updated=$(jq '.activeAccountNumber = 1' "$SEQUENCE_FILE")
+    echo "$updated" > "$SEQUENCE_FILE"
+
+    # Claude Code shows up in the first process check only
+    cat > "$TEST_HOME/bin/ps" <<'EOF'
+#!/bin/sh
+[ -e "$HOME/ps-ran" ] || { touch "$HOME/ps-ran"; echo "1 claude claude"; }
+EOF
+
+    run ccswitch.sh --switch
+    assert_success
+    assert_output --partial "Claude Code is running"
+    assert_output --partial "Claude Code closed"
+}
+
 # --- Remove ---
 
 @test "--remove-account removes with confirmation" {

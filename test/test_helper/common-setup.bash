@@ -17,6 +17,12 @@ _common_setup() {
     mkdir -p "$BACKUP_DIR"/{configs,credentials}
     chmod 700 "$BACKUP_DIR"
     chmod 700 "$BACKUP_DIR"/{configs,credentials}
+
+    # A ps that lists nothing, so a Claude Code running on the host doesn't block switches
+    mkdir -p "$TEST_HOME/bin"
+    printf '#!/bin/sh\n' > "$TEST_HOME/bin/ps"
+    chmod +x "$TEST_HOME/bin/ps"
+    export PATH="$TEST_HOME/bin:$PATH"
 }
 
 _create_mock_claude_config() {
