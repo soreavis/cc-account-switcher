@@ -1,7 +1,7 @@
 # Multi-Account Switcher for Claude Code
 
 [![CI](https://github.com/soreavis/cc-account-switcher/actions/workflows/ci.yml/badge.svg)](https://github.com/soreavis/cc-account-switcher/actions/workflows/ci.yml)
-![Version](https://img.shields.io/badge/version-1.0.1-blue)
+![Version](https://img.shields.io/badge/version-1.0.2-blue)
 ![Bash](https://img.shields.io/badge/bash-4.4%2B-green?logo=gnubash&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -121,6 +121,16 @@ When switching accounts, it:
 3. Updates Claude Code's authentication files
 
 ## Troubleshooting
+
+### If you used 1.0.0 on macOS
+
+1.0.0 saved `-` in place of the credentials in every Keychain item it wrote: the backup of each account it added or switched away from, and the Claude Code login after a switch. Since 1.0.2, switching to such an account stops with an error instead of writing `-` over your current Claude Code login. Repair each affected account:
+
+1. Remove it: `./ccswitch.sh --remove-account <email>`
+2. Log in to that account in Claude Code
+3. Add it again: `./ccswitch.sh --add-account`
+
+Re-added accounts get a new number (one above the highest in use), so check `./ccswitch.sh --list` before using `--switch-to <number>`.
 
 ### If a switch fails
 

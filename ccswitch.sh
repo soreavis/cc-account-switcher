@@ -8,7 +8,7 @@ set -euo pipefail
 # Configuration
 readonly BACKUP_DIR="$HOME/.claude-switch-backup"
 readonly SEQUENCE_FILE="$BACKUP_DIR/sequence.json"
-readonly VERSION="1.0.1"
+readonly VERSION="1.0.2"
 
 # Container detection
 is_running_in_container() {
@@ -638,8 +638,10 @@ perform_switch() {
     target_creds=$(read_account_credentials "$target_account" "$target_email")
     target_config=$(read_account_config "$target_account" "$target_email")
     
-    if [[ -z "$target_creds" || -z "$target_config" ]]; then
-        echo "Error: Missing backup data for Account-$target_account"
+    # "-" is what 1.0.0 stored in the macOS Keychain instead of the credentials
+    if [[ -z "$target_creds" || "$target_creds" == "-" || -z "$target_config" ]]; then
+        echo "Error: Missing or corrupted backup data for Account-$target_account ($target_email)"
+        echo "To repair it: $0 --remove-account $target_email, log in to that account in Claude Code, then $0 --add-account"
         exit 1
     fi
 

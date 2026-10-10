@@ -115,6 +115,27 @@ teardown() {
     assert_output --partial "Switched to Account-2 (b@test.com)"
 }
 
+@test "--switch refuses a backup saved as \"-\" by 1.0.0" {
+    local email="b@test.com"
+    _create_mock_claude_config "a@test.com" "uuid-a"
+    _create_mock_credentials '{"token":"token-a"}'
+    _seed_account "1" "a@test.com" "uuid-a"
+    _seed_account "2" "$email" "uuid-b"
+    printf '%s' "-" > "$BACKUP_DIR/credentials/.claude-credentials-2-$email.json"
+
+    local updated live
+    updated=$(jq '.activeAccountNumber = 1' "$SEQUENCE_FILE")
+    echo "$updated" > "$SEQUENCE_FILE"
+    live=$(cat "$TEST_HOME/.claude/.credentials.json")
+
+    run ccswitch.sh --switch
+    assert_failure
+    assert_output --partial "corrupted backup data for Account-2"
+    assert_output --partial "--remove-account $email"
+    run cat "$TEST_HOME/.claude/.credentials.json"
+    assert_output "$live"
+}
+
 # --- Remove ---
 
 @test "--remove-account removes with confirmation" {

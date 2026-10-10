@@ -4,6 +4,17 @@ All notable changes to this fork are documented here.
 
 This project follows [Keep a Changelog](https://keepachangelog.com/) and [Semantic Versioning](https://semver.org/).
 
+## [1.0.2] - 2026-10-10
+
+### Fixed
+
+- `--switch` and `--switch-to` refused a missing backup but restored one saved as `-` by 1.0.0 on macOS, writing `-` over the live credentials again. They now refuse it too and print the repair steps.
+
+### Added
+
+- README: how to repair accounts saved by 1.0.0 on macOS, and that re-added accounts get new numbers
+- Bats test for switching to a backup saved as `-`
+
 ## [1.0.1] - 2026-10-09
 
 ### Fixed
@@ -46,5 +57,6 @@ First release of the security-hardened fork.
 - ShellCheck SC2181: replaced `$?` check with direct exit code test
 - Replaced unquoted command substitution with `mapfile -t` for safe array population
 
+[1.0.2]: https://github.com/soreavis/cc-account-switcher/releases/tag/v1.0.2
 [1.0.1]: https://github.com/soreavis/cc-account-switcher/releases/tag/v1.0.1
 [1.0.0]: https://github.com/soreavis/cc-account-switcher/releases/tag/v1.0.0
