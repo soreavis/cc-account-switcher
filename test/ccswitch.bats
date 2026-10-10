@@ -76,6 +76,14 @@ teardown() {
     assert_output --partial "already managed"
 }
 
+@test "--add-account refuses live credentials saved as \"-\" by 1.0.0" {
+    _create_mock_claude_config "new@test.com" "uuid-new"
+    _create_mock_credentials "-"
+    run ccswitch.sh --add-account
+    assert_failure
+    assert_output --partial "No credentials found"
+}
+
 # --- List ---
 
 @test "--list shows managed accounts" {
@@ -156,6 +164,23 @@ EOF
     assert_success
     assert_output --partial "Claude Code is running"
     assert_output --partial "Claude Code closed"
+}
+
+@test "--switch keeps the current backup when the live credentials are \"-\"" {
+    local email="a@test.com"
+    _create_mock_claude_config "$email" "uuid-a"
+    _create_mock_credentials "-"
+    _seed_account "1" "$email" "uuid-a"
+    _seed_account "2" "b@test.com" "uuid-b"
+
+    local updated
+    updated=$(jq '.activeAccountNumber = 1' "$SEQUENCE_FILE")
+    echo "$updated" > "$SEQUENCE_FILE"
+
+    run ccswitch.sh --switch
+    assert_success
+    run cat "$BACKUP_DIR/credentials/.claude-credentials-1-$email.json"
+    assert_output '{"token":"token-1"}'
 }
 
 # --- Remove ---

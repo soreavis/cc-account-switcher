@@ -10,12 +10,14 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and [Semant
 
 - `--switch` and `--switch-to` refused a missing backup but restored one saved as `-` by 1.0.0 on macOS, writing `-` over the live credentials again. They now refuse it too and print the repair steps.
 - `--switch` and `--switch-to` never waited for Claude Code to close: `is_claude_running` always returned false, because awk runs the `END` block after `exit` and `END` exited 1. Inherited from upstream.
+- Live credentials of `-`, which a 1.0.0 switch left until the next login, were saved as a backup: by `--add-account` as the new account's, and by `--switch` and `--switch-to` over the current account's. `--add-account` now refuses them, and a switch keeps the existing backup.
 
 ### Added
 
 - README: how to repair accounts saved by 1.0.0 on macOS, and that re-added accounts get new numbers
 - Bats test for switching to a backup saved as `-`
 - Bats test that `--switch` waits for a running Claude Code; the tests stub `ps`, so a Claude Code running on the host doesn't block them
+- Bats tests for live credentials of `-` in `--add-account` and `--switch`
 
 ## [1.0.1] - 2026-10-09
 

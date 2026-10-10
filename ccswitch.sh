@@ -356,7 +356,8 @@ cmd_add_account() {
     current_creds=$(read_credentials)
     current_config=$(cat "$(get_claude_config_path)")
     
-    if [[ -z "$current_creds" ]]; then
+    # "-" is what a 1.0.0 switch left in the macOS Keychain until the next login
+    if [[ -z "$current_creds" || "$current_creds" == "-" ]]; then
         echo "Error: No credentials found for current account"
         exit 1
     fi
@@ -630,7 +631,10 @@ perform_switch() {
     current_creds=$(read_credentials)
     current_config=$(cat "$(get_claude_config_path)")
     
-    write_account_credentials "$current_account" "$current_email" "$current_creds"
+    # Don't overwrite the backup with the "-" a 1.0.0 switch left
+    if [[ "$current_creds" != "-" ]]; then
+        write_account_credentials "$current_account" "$current_email" "$current_creds"
+    fi
     write_account_config "$current_account" "$current_email" "$current_config"
     
     # Step 2: Retrieve target account
