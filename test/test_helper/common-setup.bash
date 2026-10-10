@@ -39,7 +39,7 @@ EOF
 }
 
 _create_mock_credentials() {
-    local creds="${1:-{\"token\":\"mock-token\"}}"
+    local creds=${1:-'{"token":"mock-token"}'}
     printf '%s' "$creds" > "$TEST_HOME/.claude/.credentials.json"
     chmod 600 "$TEST_HOME/.claude/.credentials.json"
 }
