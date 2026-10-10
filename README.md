@@ -5,7 +5,7 @@
 ![Bash](https://img.shields.io/badge/bash-4.4%2B-green?logo=gnubash&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-> **Fork of [ming86/cc-account-switcher](https://github.com/ming86/cc-account-switcher)** — security-hardened by Julian Soreavis with Claude Code.
+> **Fork of [ming86/cc-account-switcher](https://github.com/ming86/cc-account-switcher)** — security-hardened by soreavis.
 
 > [!WARNING]
 > This tool accesses and stores authentication credentials. Review the source code before use. The authors are not responsible for credential loss or unauthorized access. Use at your own risk.
@@ -169,8 +169,8 @@ Your current Claude Code login will remain active.
 ## Credits
 
 - **Original author**: [Ming](https://github.com/ming86)
-- **Fork maintained by**: [Julian Soreavis](https://github.com/soreavis)
-- **Security audit & fixes**: Julian Soreavis with [Claude Code](https://claude.ai/code)
+- **Fork maintained by**: [soreavis](https://github.com/soreavis)
+- **Security audit & fixes**: soreavis
 
 ## License
 
