@@ -4,7 +4,7 @@ All notable changes to this fork are documented here.
 
 This project follows [Keep a Changelog](https://keepachangelog.com/) and [Semantic Versioning](https://semver.org/).
 
-## [1.0.2] - 2026-10-10
+## [1.0.2] - 2026-10-11
 
 ### Fixed
 
@@ -14,7 +14,7 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and [Semant
 
 ### Added
 
-- README: how to repair accounts saved by 1.0.0 on macOS, and that re-added accounts get new numbers
+- README: how to repair accounts saved by 1.0.0 on macOS, and how re-added accounts are numbered
 - Bats test for switching to a backup saved as `-`
 - Bats test that `--switch` waits for a running Claude Code; the tests stub `ps`, so a Claude Code running on the host doesn't block them
 - Bats tests for live credentials of `-` in `--add-account` and `--switch`
@@ -40,7 +40,7 @@ First release of the security-hardened fork.
 ### Security
 
 - ~~Credentials passed via stdin instead of CLI arguments (no longer visible in `ps aux`)~~ Correction: this broke macOS Keychain writes and was reverted in 1.0.1
-- Re-enabled `wait_for_claude_close` to prevent config/credential corruption during switch. Correction: it never detected a running Claude Code until 1.0.2
+- Re-enabled `wait_for_claude_close` to prevent config/credential corruption during switch. Correction: it never detected a running Claude Code; 1.0.2 detects one that `ps` lists as plain `claude`
 - Temp file permissions (`chmod 600`) applied immediately after creation, before writing content
 - Backup integrity validation before restore (JSON structure + email mismatch check)
 

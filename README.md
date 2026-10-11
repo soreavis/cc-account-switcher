@@ -25,7 +25,7 @@ A simple tool to manage and switch between multiple Claude Code accounts on macO
 This fork includes the following security hardening over the upstream version:
 
 1. ~~**Credentials no longer exposed in process list** — Keychain writes use stdin (`-w -`) instead of passing credentials as CLI arguments visible via `ps aux`~~ **Correction (1.0.1):** `security` does not treat `-w -` as stdin; it takes `-` literally, so 1.0.0 stored `-` instead of the credentials. Keychain writes pass the credentials as a `-w` argument again, as upstream does, so they are visible in the process list while `security` runs.
-2. **Switch-while-running protection re-enabled** — `wait_for_claude_close` is active in both `--switch` and `--switch-to`, preventing config/credential corruption if Claude Code is running
+2. ~~**Switch-while-running protection re-enabled** — `wait_for_claude_close` is active in both `--switch` and `--switch-to`, preventing config/credential corruption if Claude Code is running~~ **Correction (1.0.2):** the process check never detected Claude Code, so 1.0.0 and 1.0.1 never waited. `--switch` and `--switch-to` now wait while `ps` lists a process as plain `claude`; a Claude Code that `ps` lists by its full path, or as `node …`, isn't detected. Run a switch from a terminal outside Claude Code: started inside a detected Claude Code session, it waits for that session to close too, with no timeout.
 3. **Temp file race condition eliminated** — `chmod 600` applied immediately after `mktemp`, before any content is written
 4. **Safe array population** — Replaced unquoted command substitution with `mapfile -t` to prevent word splitting
 5. **Backup integrity validation** — Restored configs are validated for valid JSON and email match before being applied, preventing tampered backup injection
@@ -130,7 +130,7 @@ When switching accounts, it:
 2. Log in to that account in Claude Code
 3. Add it again: `./ccswitch.sh --add-account`
 
-Re-added accounts get a new number (one above the highest in use), so check `./ccswitch.sh --list` before using `--switch-to <number>`.
+Re-added accounts are numbered one above the highest in use, so an account's number can change: check `./ccswitch.sh --list` before using `--switch-to <number>`.
 
 ### If a switch fails
 
